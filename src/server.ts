@@ -1,10 +1,33 @@
 import http from "node:http";
+import fs from "node:fs";
 import { AsyncLocalStorage } from "node:async_hooks";
 
 import type { SSRManifest } from "astro";
 import { NodeApp, applyPolyfills } from "astro/app/node";
 
 applyPolyfills();
+
+// Load runtime environment variables from .env file deployed with the compute bundle.
+// Amplify build-time env vars aren't available at Lambda runtime, so we write them
+// to a .env file during build and load them here.
+try {
+  // Server code is bundled into chunks/ subdirectory, so go up to compute root
+  const envPath = new URL("../.env", import.meta.url);
+  const envContent = fs.readFileSync(envPath, "utf-8");
+  for (const line of envContent.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eqIndex = trimmed.indexOf("=");
+    if (eqIndex === -1) continue;
+    const key = trimmed.slice(0, eqIndex);
+    const value = trimmed.slice(eqIndex + 1);
+    if (!process.env[key]) {
+      process.env[key] = value;
+    }
+  }
+} catch {
+  // .env file may not exist in all environments
+}
 
 export function createExports(manifest: SSRManifest, options: Options) {
   const app = new NodeApp(manifest);
@@ -84,6 +107,20 @@ function createHandler(app: NodeApp, port: number) {
     }
 
     const routeData = app.match(request);
+
+    // For GET requests without a route match, redirect clean URLs to trailing
+    // slash so Amplify static hosting can resolve them to index.html
+    // (e.g., /about -> /about/ -> about/index.html). Only GET — POST/PUT/etc.
+    // should never be redirected as the body would be lost.
+    if (!routeData && req.method === "GET") {
+      const url = new URL(request.url);
+      if (!url.pathname.endsWith("/") && !url.pathname.includes(".")) {
+        url.pathname += "/";
+        res.writeHead(301, { Location: url.pathname + url.search });
+        res.end();
+        return;
+      }
+    }
     if (routeData) {
       const response = await als.run(request.url, () =>
         app.render(request, {

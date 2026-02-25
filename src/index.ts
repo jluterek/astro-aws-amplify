@@ -68,24 +68,17 @@ export default function awsAmplify(options: AwsAmplifyOptions = {}): AstroIntegr
           version: 1,
           routes: [
             {
-              path: `${_config.base}assets/*`,
+              path: `${_config.base}${_config.build.assets}/*`,
               target: {
                 kind: "Static",
-              },
-            },
-            {
-              path: `${_config.base}*.*`,
-              target: {
-                kind: "Static",
-              },
-              fallback: {
-                kind: "Compute",
-                src: "default",
               },
             },
             {
               path: "/*",
               target: {
+                kind: "Static",
+              },
+              fallback: {
                 kind: "Compute",
                 src: "default",
               },

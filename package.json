@@ -1,34 +1,26 @@
 {
-  "name": "astro-aws-amplify-root",
-  "type": "module",
-  "version": "0.0.0",
-  "private": true,
+  "name": "astro-aws-amplify",
+  "version": "1.0.0",
+  "description": "Deploy Astro 5 to AWS Amplify (SSR)",
+  "keywords": [
+    "astro",
+    "withastro",
+    "astro-adapter",
+    "aws",
+    "amplify",
+    "ssr"
+  ],
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/alexnguyennz/astro-aws-amplify.git"
+    "url": "https://github.com/jluterek/astro-aws-amplify.git"
   },
-  "scripts": {
-    "dev": "turbo run dev --parallel",
-    "build": "turbo run build",
-    "lint": "eslint --ext .js,.jsx,.ts,.tsx,.astro .",
-    "format": "prettier -w \"**/*\" --ignore-unknown --cache",
-    "changeset": "changeset",
-    "release": "turbo run build --filter=adapter && changeset publish"
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts"
   },
-  "engines": {
-    "node": ">=18.14.1",
-    "pnpm": ">=8.6.10"
-  },
-  "packageManager": "pnpm@8.6.10",
-  "devDependencies": {
-    "@changesets/changelog-github": "^0.5.0",
-    "@changesets/cli": "^2.27.1",
-    "@typescript-eslint/parser": "^6.14.0",
-    "eslint": "^8.56.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-astro": "^0.31.0",
-    "prettier": "^3.1.1",
-    "prettier-plugin-astro": "^0.12.2",
-    "turbo": "^1.11.2"
+  "peerDependencies": {
+    "astro": "^5.0.0"
   }
 }
